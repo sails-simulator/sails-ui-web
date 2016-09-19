@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+
+import asyncio
+import logging
+import pickle
+
+from aiohttp import web
+
+logging.basicConfig(level=logging.DEBUG)
+
+
+async def get_handler(request):
+    name = request.match_info.get('file', None)
+    if name is None:
+        name = 'index.html'
+    if name in {'index.html'}:
+        with open(name) as f:
+            body = f.read()
+        return web.Response(body=body.encode('utf-8'),
+                            content_type='text/html')
+    else:
+        return web.Response(status=404)
+
+
+async def wshandler(request):
+    app = request.app
+    ws = web.WebSocketResponse()
+    await ws.prepare(request)
+    app['sockets'].append(ws)
+
+    async for msg in ws:
+        if msg.tp == aiohttp.MsgType.text:
+            print('text')
+            if msg.data == 'something':
+                print('something')
+                ws.send_str(json.dumps({'some_data': 'something'))
+        if msg.tp == web.MsgType.close:
+            break
+
+    app['sockets'].remove(ws)
+    return ws
+
+
+async def init(loop):
+    app = web.Application(loop=loop)
+    app.router.add_route('GET', '/ws', wshandler)
+    app.router.add_route('GET', '/{file}', get_handler)
+    app.router.add_route('GET', '/', get_handler)
+    app['sockets'] = []
+
+    srv = await loop.create_server(app.make_handler(), '0.0.0.0', 8080)
+    return srv
+
+
+loop = asyncio.get_event_loop()
+loop.run_until_complete(init(loop))
+loop.run_forever()
