@@ -5,6 +5,7 @@ import json
 import logging
 
 from aiohttp import web
+import sailsd
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -43,10 +44,13 @@ async def wshandler(request):
 
 async def listen_to_sailsd(app):
     try:
+        sails = sailsd.Sailsd()
         while True:
             print('listen_to_sailsd')
             for ws in app["sockets"]:
-                ws.send_str(json.dumps({'something': 'some_data'}))
+                ws.send_str(json.dumps(
+                    sails.request('latitude', 'longitude', 'heading')
+                ))
             await asyncio.sleep(0.5)  # TODO: decrease this length of time
     except asyncio.CancelledError:
         print('Cancel sailsd listener: close connections...')
