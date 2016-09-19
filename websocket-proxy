@@ -58,7 +58,7 @@ async def listen_to_sailsd(app):
                                   'wind-angle'
                     )
                 ))
-            await asyncio.sleep(0.5)  # TODO: decrease this length of time
+            await asyncio.sleep(0.05)  # TODO: decrease this length of time
     except asyncio.CancelledError:
         print('Cancel sailsd listener: close connections...')
 
