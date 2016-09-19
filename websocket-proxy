@@ -49,7 +49,14 @@ async def listen_to_sailsd(app):
             print('listen_to_sailsd')
             for ws in app["sockets"]:
                 ws.send_str(json.dumps(
-                    sails.request('latitude', 'longitude', 'heading')
+                    sails.request('latitude',
+                                  'longitude',
+                                  'heading',
+                                  'sail-angle',
+                                  'rudder-angle',
+                                  'wind-speed',
+                                  'wind-angle'
+                    )
                 ))
             await asyncio.sleep(0.5)  # TODO: decrease this length of time
     except asyncio.CancelledError:
