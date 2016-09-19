@@ -1,36 +1,80 @@
 <!DOCTYPE html>
 <html>
-    <body>
-        <script>
-            document.addEventListener("DOMContentLoaded", function() {
-                'use strict';
-                var protocol = window.location.protocol == "https:" ? "wss" : "ws";
-                var host = window.location.hostname;
-                var port = (location.port ? ':'+location.port: '')
-                    var ws = null;
-                function start(){
-                    ws = new WebSocket(protocol + "://" + host + port + "/ws");
-                    ws.onopen = function(){
-                        console.log('connected!');
-                    };
-                    ws.onmessage = function(e){
-                        console.log(e.data);
-                    };
-                    ws.onclose = function(){
-                        console.log('closed!');
-                        check();
-                    };
-                    ws.onmessage = function (event) {
-                        var obj = JSON.parse(event.data);
-                        console.log(obj);
-                    };
-                }
-                function check(){
-                    if(!ws || ws.readyState === WebSocket.CLOSED) start();
-                }
-                start();
-                setInterval(check, 5000);
-            });
-        </script>
-    </body>
+  <head>
+    <title>View Animation</title>
+    <link rel="stylesheet" href="http://openlayers.org/en/v3.18.2/css/ol.css" type="text/css">
+    <!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
+    <script src="http://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL"></script>
+    <script src="http://openlayers.org/en/v3.18.2/build/ol.js"></script>
+  </head>
+  <body>
+    <div id="map" class="map"></div>
+    <script>
+      var view = new ol.View({
+        // the view's initial state
+        center: ol.proj.fromLonLat([0,
+                                    0]),
+        zoom: 6
+      });
+
+      var map = new ol.Map({
+        layers: [
+          new ol.layer.Tile({
+            preload: 4,
+            source: new ol.source.OSM()
+          })
+        ],
+        // Improve user experience by loading tiles while animating. Will make
+        // animations stutter on mobile or slow devices.
+        loadTilesWhileAnimating: true,
+        target: 'map',
+        controls: ol.control.defaults({
+          attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
+            collapsible: false
+          })
+        }),
+        view: view
+      });
+
+      document.addEventListener("DOMContentLoaded", function() {
+          'use strict';
+          var protocol = window.location.protocol == "https:" ? "wss" : "ws";
+          var host = window.location.hostname;
+          var port = (location.port ? ':'+location.port: '')
+              var ws = null;
+          function start(){
+              ws = new WebSocket(protocol + "://" + host + port + "/ws");
+              ws.onopen = function(){
+                  console.log('connected!');
+              };
+              ws.onmessage = function(e){
+                  console.log(e.data);
+              };
+              ws.onclose = function(){
+                  console.log('closed!');
+                  check();
+              };
+              ws.onmessage = function (event) {
+                  var sailsd_data = JSON.parse(event.data);
+                  console.log(sailsd_data);
+
+                  var loc = ol.proj.fromLonLat([sailsd_data.longitude,
+                                                sailsd_data.latitude]);
+
+                  var pan = ol.animation.pan({
+                    duration: 100,
+                    source: /** @type {ol.Coordinate} */ (view.getCenter())
+                  });
+                  map.beforeRender(pan);
+                  view.setCenter(loc);
+              };
+          }
+          function check(){
+              if(!ws || ws.readyState === WebSocket.CLOSED) start();
+          }
+          start();
+          setInterval(check, 5000);
+    });
+    </script>
+  </body>
 </html>
