@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                'use strict';
+                var protocol = window.location.protocol == "https:" ? "wss" : "ws";
+                var host = window.location.hostname;
+                var port = (location.port ? ':'+location.port: '')
+                    var ws = null;
+                function start(){
+                    ws = new WebSocket(protocol + "://" + host + port + "/ws");
+                    ws.onopen = function(){
+                        console.log('connected!');
+                    };
+                    ws.onmessage = function(e){
+                        console.log(e.data);
+                    };
+                    ws.onclose = function(){
+                        console.log('closed!');
+                        check();
+                    };
+                    ws.onmessage = function (event) {
+                        var obj = JSON.parse(event.data);
+                        console.log(obj);
+                    };
+                }
+                function check(){
+                    if(!ws || ws.readyState === WebSocket.CLOSED) start();
+                }
+                start();
+                setInterval(check, 5000);
+            });
+        </script>
+    </body>
+</html>
