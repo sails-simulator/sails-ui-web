@@ -33,7 +33,7 @@ async def wshandler(request):
             print('text')
             if msg.data == 'something':
                 print('something')
-                ws.send_str(json.dumps({'some_data': 'something'))
+                ws.send_str(json.dumps({'some_data': 'something'}))
         if msg.tp == web.MsgType.close:
             break
 
