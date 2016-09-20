@@ -59,12 +59,15 @@
         view: view
       });
 
+      var boat_marker = new ol.Feature(new ol.geom.Point(0, 0));
+
       document.addEventListener("DOMContentLoaded", function() {
           'use strict';
           var protocol = window.location.protocol == "https:" ? "wss" : "ws";
           var host = window.location.hostname;
-          var port = (location.port ? ':'+location.port: '')
-              var ws = null;
+          var port = (location.port ? ':'+location.port: '');
+          var ws = null;
+
           function start(){
               ws = new WebSocket(protocol + "://" + host + port + "/ws");
               ws.onopen = function(){
@@ -82,11 +85,11 @@
                   console.log(sailsd_data);
 
                   var loc = ol.proj.fromLonLat([sailsd_data.longitude,
-                                                sailsd_data.latitude]);
+                          sailsd_data.latitude]);
 
                   var pan = ol.animation.pan({
-                    duration: 100,
-                    source: /** @type {ol.Coordinate} */ (view.getCenter())
+                      duration: 100,
+                      source: /** @type {ol.Coordinate} */ (view.getCenter())
                   });
                   map.beforeRender(pan);
                   view.setCenter(loc);
