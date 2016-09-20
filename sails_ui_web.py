@@ -67,11 +67,16 @@ async def start_background_tasks(app):
     app['sailsd_listener'] = app.loop.create_task(listen_to_sailsd(app))
 
 
-app = web.Application()
-app.on_startup.append(start_background_tasks)
-app.router.add_route('GET', '/ws', wshandler)
-app.router.add_route('GET', '/{file}', get_handler)
-app.router.add_route('GET', '/', get_handler)
-app['sockets'] = []
+def main():
+    app = web.Application()
+    app.on_startup.append(start_background_tasks)
+    app.router.add_route('GET', '/ws', wshandler)
+    app.router.add_route('GET', '/{file}', get_handler)
+    app.router.add_route('GET', '/', get_handler)
+    app['sockets'] = []
 
-web.run_app(app)
+    web.run_app(app)
+
+
+if __name__ == '__main__':
+    main()
