@@ -3,11 +3,15 @@
 import asyncio
 import json
 import logging
+import os
+import sys
 
 from aiohttp import web
 import sailsd
 
 logging.basicConfig(level=logging.DEBUG)
+
+static_path = os.path.dirname(__file__)
 
 
 async def get_handler(request):
@@ -15,6 +19,7 @@ async def get_handler(request):
     if name is None:
         name = 'index.html'
     if name in {'index.html'}:
+        name = os.path.join(static_path, name)
         with open(name) as f:
             body = f.read()
         return web.Response(body=body.encode('utf-8'),
@@ -79,4 +84,7 @@ def main():
 
 
 if __name__ == '__main__':
+    global static_path
+    if len(sys.argv) > 1:
+        static_path = sys.argv[1]
     main()
