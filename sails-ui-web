@@ -53,7 +53,6 @@ async def listen_to_sailsd(app):
     try:
         sails = sailsd.Sailsd()
         while True:
-            print('listen_to_sailsd')
             for ws in app["sockets"]:
                 ws.send_str(json.dumps(
                     sails.request('latitude',
