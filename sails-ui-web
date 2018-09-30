@@ -11,6 +11,8 @@ import sailsd
 
 logging.basicConfig(level=logging.DEBUG)
 
+global static_path
+
 static_path = os.path.dirname(__file__)
 
 
@@ -82,9 +84,7 @@ def main():
 
     web.run_app(app)
 
-
 if __name__ == '__main__':
-    global static_path
     if len(sys.argv) > 1:
         static_path = sys.argv[1]
     main()
