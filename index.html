@@ -70,6 +70,13 @@
 
           function start(){
               ws = new WebSocket(protocol + "://" + host + port + "/ws");
+              
+              // Ensure we close the ws
+              window.onbeforeunload = function () {
+                  ws.onclose = function () { }; // disable onclose handler first
+                  ws.close();
+              };
+
               ws.onopen = function(){
                   console.log('connected!');
               };

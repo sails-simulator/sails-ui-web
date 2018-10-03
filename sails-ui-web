@@ -38,14 +38,13 @@ async def wshandler(request):
 
     async for msg in ws:
         if msg.tp == aiohttp.MsgType.text:
-            print('text')
-            if msg.data == 'something':
-                print('something')
-                ws.send_str(json.dumps({'some_data': 'something'}))
-        if msg.tp == web.MsgType.close:
-            break
+            if msg.data == 'close':
+                app['sockets'].remove(ws)
+                await ws.close()
+        elif msg.tp == aiohttp.MsgType.error:
+            app['sockets'].remove(ws)
+            print('ws connection closed with exception %s' % ws.exception())
 
-    app['sockets'].remove(ws)
     return ws
 
 
@@ -55,16 +54,22 @@ async def listen_to_sailsd(app):
         port = int(os.getenv('SAILSD_PORT', '3333'))
         sails = sailsd.Sailsd(host, port)
         while True:
-            for ws in app["sockets"]:
-                ws.send_str(json.dumps(
-                    sails.request('latitude',
-                                  'longitude',
-                                  'heading',
-                                  'sail-angle',
-                                  'rudder-angle',
-                                  'wind-speed',
-                                  'wind-angle')
-                ))
+            closed_ws = []
+            for ws in app['sockets']:
+                if ws.closed:
+                    closed_ws.append(ws)
+                else:
+                    await ws.send_str(json.dumps(sails.request(
+                        'latitude',
+                        'longitude',
+                        'heading',
+                        'sail-angle',
+                        'rudder-angle',
+                        'wind-speed',
+                        'wind-angle')
+                    ))
+            for ws in closed_ws:
+                app["sockets"].remove(ws)
             await asyncio.sleep(0.05)  # TODO: decrease this length of time
     except asyncio.CancelledError:
         print('Cancel sailsd listener: close connections...')
@@ -84,6 +89,7 @@ def main():
     app['sockets'] = []
 
     web.run_app(app)
+
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
