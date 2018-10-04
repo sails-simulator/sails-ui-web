@@ -1,2 +1,3 @@
 aiohttp
-python-sailsd
+# Until the latest is on pypi
+git+https://github.com/sails-simulator/python-sailsd.git@53f7f3d
